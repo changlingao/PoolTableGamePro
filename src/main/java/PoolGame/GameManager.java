@@ -123,6 +123,7 @@ public class GameManager {
             winFlag = true;
         }
 
+        //TODO: check ball alive???
         for (Ball ball : balls) {
             ball.tick();
 
@@ -140,10 +141,11 @@ public class GameManager {
                         this.reset();
                     } else {
                         if (ball.remove()) {
+                            // TODO: case color for score??
                             score++;
                         } else {
-                            // Check if when ball is removed, any other balls are present in its space. (If
-                            // another ball is present, blue ball is removed)
+                            // Check if when ball is removed, any other balls are present in its space.
+                            // If another ball is present, blue ball is removed
                             for (Ball otherBall : balls) {
                                 double deltaX = ball.getxPos() - otherBall.getxPos();
                                 double deltaY = ball.getyPos() - otherBall.getyPos();
@@ -201,6 +203,7 @@ public class GameManager {
      */
     public void reset() {
         for (Ball ball : balls) {
+
             ball.reset();
         }
 

@@ -18,7 +18,6 @@ public class Table {
         this.xLength = xLength;
         this.yLength = yLength;
         this.friction = friction;
-        initialisePockets();
     }
 
     /**
@@ -67,8 +66,15 @@ public class Table {
     }
 
     /**
-     * Initialises the pockets of the table.
+     * instead of initialisePockets() internally,
+     * PocketReader will read
+     * @param pockets
      */
+    public void setPockets(List<Pocket> pockets) {
+        this.pockets = pockets;
+    }
+
+    // TODO: pocket position so weird!!...
     private void initialisePockets() {
         pockets.add(new Pocket(10, 10));
         pockets.add(new Pocket(xLength - 10, 10));

@@ -6,7 +6,10 @@ import PoolGame.objects.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -49,6 +52,12 @@ public class TableReader implements Reader {
             }
 
             gameManager.setTable(new Table(tableColour, tableX, tableY, tableFriction));
+
+            // parse pockets
+            JSONArray jsonPockets = (JSONArray) jsonTable.get("pockets");
+            List<Pocket> pockets = parsePockets(jsonPockets);
+            gameManager.getTable().setPockets(pockets);
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -56,5 +65,34 @@ public class TableReader implements Reader {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * parse the "pockets" section in config.json
+     * @param jsonPockets the JSONArray of "pockets"
+     * @return a list of Pocket
+     */
+    public List<Pocket> parsePockets(JSONArray jsonPockets) {
+        List<Pocket> pockets = new ArrayList<>();
+        // reading from the array:
+        for (Object obj : jsonPockets) {
+            JSONObject jsonPocket = (JSONObject) obj;
+            // parse the params of Pocket
+            double x = (double) ((JSONObject) jsonPocket.get("position")).get("x");
+            double y = (double) ((JSONObject) jsonPocket.get("position")).get("y");
+            double radius = (double) jsonPocket.get("radius");
+
+            Pocket pocket = new Pocket(x, y, radius);
+
+//                // Check pocket is within bounds
+//                Table table = gameManager.getTable();
+//                10 ????
+//                if (x > table.getxLength() || x < 10 || y > table.getyLength() || y < 10) {
+//                    System.out.println("Pocket position is outside the table");
+//                    System.exit(0);
+//                }
+            pockets.add(pocket);
+        }
+        return pockets;
     }
 }

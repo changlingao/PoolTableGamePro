@@ -9,6 +9,19 @@ public class Pocket {
     private double yPosition;
     private double radius;
 
+
+    /**
+     * Constructor of Pocket with 3 params
+     * @param xPosition
+     * @param yPosition
+     * @param radius configurable not fixed to 15
+     */
+    public Pocket(double xPosition, double yPosition, double radius) {
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.radius = radius;
+    }
+
     public Pocket(double xPosition, double yPosition) {
         this.xPosition = xPosition;
         this.yPosition = yPosition;

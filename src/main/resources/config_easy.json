@@ -6,50 +6,50 @@
       "x": 600,
       "y": 400
     },
-  "pockets": [
-      {
-        "position": {
-          "x": 50.0,
-          "y": 25.0
+    "pockets": [
+        {
+          "position": {
+            "x": 50.0,
+            "y": 25.0
+          },
+          "radius": 15.0
         },
-        "radius": 50.0
-      },
-      {
-        "position": {
-          "x": 650.0,
-          "y": 25.0
+        {
+          "position": {
+            "x": 650.0,
+            "y": 25.0
+          },
+          "radius": 15.0
         },
-        "radius": 50.0
-      },
-      {
-        "position": {
-          "x": 50.0,
-          "y": 425.0
+        {
+          "position": {
+            "x": 50.0,
+            "y": 425.0
+          },
+          "radius": 15.0
         },
-        "radius": 50.0
-      },
-      {
-        "position": {
-          "x": 650.0,
-          "y": 425.0
+        {
+          "position": {
+            "x": 650.0,
+            "y": 425.0
+          },
+          "radius": 15.0
         },
-        "radius": 50.0
-      },
-      {
-        "position": {
-          "x": 350.0,
-          "y": 25.0
+        {
+          "position": {
+            "x": 350.0,
+            "y": 25.0
+          },
+          "radius": 15.0
         },
-        "radius": 50.0
-      },
-      {
-        "position": {
-          "x": 350.0,
-          "y": 425.0
-        },
-        "radius": 50.0
-      }
-      ]
+        {
+          "position": {
+            "x": 350.0,
+            "y": 425.0
+          },
+          "radius": 15.0
+        }
+    ]
   },
   "Balls": {
     "ball": [

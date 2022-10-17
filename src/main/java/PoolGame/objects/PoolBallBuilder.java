@@ -1,5 +1,6 @@
 package PoolGame.objects;
 
+import PoolGame.strategy.BrownStrategy;
 import PoolGame.strategy.PocketStrategy;
 import PoolGame.strategy.BallStrategy;
 import PoolGame.strategy.BlueStrategy;
@@ -57,10 +58,12 @@ public class PoolBallBuilder implements BallBuilder {
         if (colour.equals("white")) {
             isCue = true;
             strategy = new BallStrategy();
-        } else if (colour.equals("blue")) {
+        } else if (colour.equals("blue") || colour.equals("green") || colour.equals("purple")) {
             strategy = new BlueStrategy();
-        } else {
+        } else if (colour.equals("red") || colour.equals("orange") || colour.equals("yellow")) {
             strategy = new BallStrategy();
+        } else if (colour.equals("black") || colour.equals("brown")) {
+            strategy = new BrownStrategy();
         }
 
         return new Ball(colour, xPosition, yPosition, xVelocity, yVelocity, mass, isCue, strategy);
