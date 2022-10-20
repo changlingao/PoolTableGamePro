@@ -139,7 +139,8 @@ public class Ball {
 
     /**
      * Getter method for x-position of ball.
-     * 
+     * is actually different from stored xPosition...
+     *
      * @return x position.
      */
     public double getxPos() {
@@ -227,4 +228,32 @@ public class Ball {
         return isActive;
     }
 
+    /**
+     * used for undo
+     *
+     * @return if ball is still
+     */
+    public boolean isStill() {
+        return xVelocity == 0 && yVelocity == 0;
+    }
+
+    /**
+     * used for Memento
+     *
+     * @return deep copy
+     */
+    public Ball copy() {
+        Ball ball = new Ball("black", xPosition, yPosition, xVelocity, yVelocity, mass, isCue, null);
+        ball.setColour(colour);
+        ball.setStrategy(strategy.copy());
+        return ball;
+    }
+
+    public void setColour(Paint colour) {
+        this.colour = colour;
+    }
+
+    public void setStrategy(PocketStrategy strategy) {
+        this.strategy = strategy;
+    }
 }

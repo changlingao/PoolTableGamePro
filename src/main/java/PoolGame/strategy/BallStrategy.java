@@ -11,4 +11,14 @@ public class BallStrategy extends PocketStrategy {
     public void reset() {
         this.lives = 1;
     }
+
+
+    public BallStrategy(int lives) {
+        this.lives = lives;
+    }
+
+    @Override
+    public BallStrategy copy() {
+        return new BallStrategy(lives);
+    }
 }

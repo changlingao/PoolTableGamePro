@@ -12,4 +12,13 @@ public class BrownStrategy extends PocketStrategy {
     public void reset() {
         this.lives = 3;
     }
+
+    public BrownStrategy(int lives) {
+        this.lives = lives;
+    }
+
+    @Override
+    public BrownStrategy copy() {
+        return new BrownStrategy(lives);
+    }
 }

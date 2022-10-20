@@ -1,13 +1,20 @@
 package PoolGame;
 
 import PoolGame.objects.*;
-import java.util.ArrayList;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 
+import javafx.scene.control.Button;
 import javafx.scene.shape.Line;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
@@ -16,7 +23,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 
-import javafx.util.Duration;
 import javafx.util.Pair;
 
 /**
@@ -38,11 +44,16 @@ public class GameManager {
     private Scene scene;
     private GraphicsContext gc;
 
+    private Timer timer = new Timer();
+    private Duration duration = Duration.ZERO;
+
+    private Memento memento;
+
     /**
      * Initialises timeline and cycle count.
      */
     public void run() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(17),
+        Timeline timeline = new Timeline(new KeyFrame(javafx.util.Duration.millis(17),
                 t -> this.draw()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -59,6 +70,52 @@ public class GameManager {
         Canvas canvas = new Canvas(table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
         gc = canvas.getGraphicsContext2D();
         pane.getChildren().add(canvas);
+
+        // timer set up
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                duration = duration.plusSeconds(1);
+            }
+        };
+        timer.scheduleAtFixedRate(task, new Date(), 1000);
+
+        // undo button set up
+        Button undoButton = new Button("undo the shot");
+        undoButton.setLayoutX(350);
+        undoButton.setLayoutY(10);
+        pane.getChildren().add(undoButton);
+
+        undoButton.setOnAction((ActionEvent actionEvent) -> {
+            restore(memento);
+        });
+
+    }
+
+    /**
+     * draw the timer
+     */
+    private void drawTimer() {
+        gc.setStroke(Paint.valueOf("black"));
+        gc.setFont(new Font(20));
+        String text = "Timer:  " + duration.toMinutes() + ":" + duration.toSeconds()%60 ;
+        gc.strokeText(text, 50, 30);
+    }
+
+
+    /**
+     * observe the score, when changed notify the observer
+     * @param score score of the game
+     */
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    private void drawScore() {
+        gc.setStroke(Paint.valueOf("black"));
+        gc.setFont(new Font(20));
+        String text = "Score:  " + score;
+        gc.strokeText(text, 200, 30);
     }
 
     /**
@@ -104,14 +161,59 @@ public class GameManager {
 
         }
 
+        // Timer
+        drawTimer();
+
+        // Score
+        drawScore();
+
         // Win
         if (winFlag) {
+            gc.setFill(Paint.valueOf("black"));
+            gc.fillRect(0, 0, table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
+
             gc.setStroke(Paint.valueOf("white"));
             gc.setFont(new Font("Impact", 80));
             gc.strokeText("Win and bye", table.getxLength() / 2 + TABLEBUFFER - 180,
                     table.getyLength() / 2 + TABLEBUFFER);
+
+            // stop timer when all balls are in pockets
+            timer.cancel();
         }
 
+    }
+
+    /**
+     * check if won the game
+     * @return winFlag
+     */
+    private boolean checkWin() {
+        int count = 0;
+        for (Ball ball : balls) {
+            if (!ball.isActive()) {
+                count ++;
+            }
+        }
+        return count == (balls.size() - 1);
+    }
+
+    /**
+     * save the still state
+     * @return Memento
+     */
+    private Memento save() {
+        return new Memento(score, duration, balls);
+    }
+
+    /**
+     * restore state from memento
+     * @param memento kept by Caretaker
+     */
+    private void restore(Memento memento) {
+        score = memento.getScore();
+        duration = memento.getDuration();
+        balls = memento.getBalls();
+        // deep copy ???
     }
 
     /**
@@ -119,83 +221,126 @@ public class GameManager {
      * Used Exercise 6 as reference.
      */
     public void tick() {
-        if (score == balls.size() - 1) {
+        // if all balls are still, save the still state
+        boolean isStill = true;
+        for (Ball ball: balls) {
+            if (!ball.isStill()) {
+                isStill = false;
+                break;
+            }
+        }
+        if (isStill) {
+            memento = save();
+        }
+
+
+        if (checkWin()) {
             winFlag = true;
         }
 
-        //TODO: check ball alive???
         for (Ball ball : balls) {
-            ball.tick();
+            // bug fixed: check ball alive
+            if (ball.isActive()) {
+                ball.tick();
 
-            if (ball.isCue() && cueSet) {
-                hitBall(ball);
-            }
+                if (ball.isCue() && cueSet) {
+                    hitBall(ball);
+                }
 
-            double width = table.getxLength();
-            double height = table.getyLength();
+                double width = table.getxLength();
+                double height = table.getyLength();
 
-            // Check if ball landed in pocket
-            for (Pocket pocket : table.getPockets()) {
-                if (pocket.isInPocket(ball)) {
-                    if (ball.isCue()) {
-                        this.reset();
-                    } else {
-                        if (ball.remove()) {
-                            // TODO: case color for score??
-                            score++;
+                // Check if ball landed in pocket
+                for (Pocket pocket : table.getPockets()) {
+                    if (pocket.isInPocket(ball)) {
+                        if (ball.isCue()) {
+                            this.reset();
                         } else {
-                            // Check if when ball is removed, any other balls are present in its space.
-                            // If another ball is present, blue ball is removed
-                            for (Ball otherBall : balls) {
-                                double deltaX = ball.getxPos() - otherBall.getxPos();
-                                double deltaY = ball.getyPos() - otherBall.getyPos();
-                                double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                                if (otherBall != ball && otherBall.isActive() && distance < 10) {
-                                    ball.remove();
+                            if (ball.remove()) {
+                                setScore(score + colourScore(ball.getColour()));
+                            } else {
+                                // Check if when ball is removed, any other balls are present in its space.
+                                // If another ball is present, blue ball is removed
+                                for (Ball otherBall : balls) {
+                                    double deltaX = ball.getxPos() - otherBall.getxPos();
+                                    double deltaY = ball.getyPos() - otherBall.getyPos();
+                                    double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                                    if (otherBall != ball && otherBall.isActive() && distance < 10) {
+                                        if(ball.remove()) {
+                                            setScore(score + colourScore(ball.getColour()));
+                                        }
+                                    }
                                 }
                             }
                         }
+                        break;
                     }
-                    break;
                 }
-            }
 
-            // Handle the edges (balls don't get a choice here)
-            if (ball.getxPos() + ball.getRadius() > width + TABLEBUFFER) {
-                ball.setxPos(width - ball.getRadius());
-                ball.setxVel(ball.getxVel() * -1);
-            }
-            if (ball.getxPos() - ball.getRadius() < TABLEBUFFER) {
-                ball.setxPos(ball.getRadius());
-                ball.setxVel(ball.getxVel() * -1);
-            }
-            if (ball.getyPos() + ball.getRadius() > height + TABLEBUFFER) {
-                ball.setyPos(height - ball.getRadius());
-                ball.setyVel(ball.getyVel() * -1);
-            }
-            if (ball.getyPos() - ball.getRadius() < TABLEBUFFER) {
-                ball.setyPos(ball.getRadius());
-                ball.setyVel(ball.getyVel() * -1);
-            }
+                // Handle the edges (balls don't get a choice here)
+                if (ball.getxPos() + ball.getRadius() > width + TABLEBUFFER) {
+                    ball.setxPos(width - ball.getRadius());
+                    ball.setxVel(ball.getxVel() * -1);
+                }
+                if (ball.getxPos() - ball.getRadius() < TABLEBUFFER) {
+                    ball.setxPos(ball.getRadius());
+                    ball.setxVel(ball.getxVel() * -1);
+                }
+                if (ball.getyPos() + ball.getRadius() > height + TABLEBUFFER) {
+                    ball.setyPos(height - ball.getRadius());
+                    ball.setyVel(ball.getyVel() * -1);
+                }
+                if (ball.getyPos() - ball.getRadius() < TABLEBUFFER) {
+                    ball.setyPos(ball.getRadius());
+                    ball.setyVel(ball.getyVel() * -1);
+                }
 
-            // Apply table friction
-            double friction = table.getFriction();
-            ball.setxVel(ball.getxVel() * friction);
-            ball.setyVel(ball.getyVel() * friction);
+                // Apply table friction
+                double friction = table.getFriction();
+                ball.setxVel(ball.getxVel() * friction);
+                ball.setyVel(ball.getyVel() * friction);
 
-            // Check ball collisions
-            for (Ball ballB : balls) {
-                if (checkCollision(ball, ballB)) {
-                    Point2D ballPos = new Point2D(ball.getxPos(), ball.getyPos());
-                    Point2D ballBPos = new Point2D(ballB.getxPos(), ballB.getyPos());
-                    Point2D ballVel = new Point2D(ball.getxVel(), ball.getyVel());
-                    Point2D ballBVel = new Point2D(ballB.getxVel(), ballB.getyVel());
-                    Pair<Point2D, Point2D> changes = calculateCollision(ballPos, ballVel, ball.getMass(), ballBPos,
-                            ballBVel, ballB.getMass(), false);
-                    calculateChanges(changes, ball, ballB);
+                // Check ball collisions
+                for (Ball ballB : balls) {
+                    if (checkCollision(ball, ballB)) {
+                        Point2D ballPos = new Point2D(ball.getxPos(), ball.getyPos());
+                        Point2D ballBPos = new Point2D(ballB.getxPos(), ballB.getyPos());
+                        Point2D ballVel = new Point2D(ball.getxVel(), ball.getyVel());
+                        Point2D ballBVel = new Point2D(ballB.getxVel(), ballB.getyVel());
+                        Pair<Point2D, Point2D> changes = calculateCollision(ballPos, ballVel, ball.getMass(), ballBPos,
+                                ballBVel, ballB.getMass(), false);
+                        calculateChanges(changes, ball, ballB);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * score when falling into pockets corresponding to colour
+     *
+     * @param colour of the ball
+     * @return score corresponding to colour
+     */
+    public int colourScore(Paint colour) {
+        if (colour.equals(Paint.valueOf("red"))) {
+            return 1;
+        } else if (colour.equals(Paint.valueOf("yellow"))) {
+            return 2;
+        } else if (colour.equals(Paint.valueOf("green"))) {
+            return 3;
+        } else if (colour.equals(Paint.valueOf("brown"))) {
+            return 4;
+        } else if (colour.equals(Paint.valueOf("blue"))) {
+            return 5;
+        } else if (colour.equals(Paint.valueOf("purple"))) {
+            return 6;
+        } else if (colour.equals(Paint.valueOf("black"))) {
+            return 7;
+        } else if (colour.equals(Paint.valueOf("orange"))) {
+            return 8;
+        }
+        return 0;
     }
 
     /**
@@ -203,11 +348,10 @@ public class GameManager {
      */
     public void reset() {
         for (Ball ball : balls) {
-
             ball.reset();
         }
 
-        this.score = 0;
+        setScore(0);
     }
 
     /**

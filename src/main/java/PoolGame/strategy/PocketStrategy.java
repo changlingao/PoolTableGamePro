@@ -23,4 +23,6 @@ public abstract class PocketStrategy {
      * Resets the ball to its original state.
      */
     public abstract void reset();
+
+    public abstract PocketStrategy copy();
 }

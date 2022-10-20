@@ -51,12 +51,12 @@ public class TableReader implements Reader {
                 System.exit(0);
             }
 
-            gameManager.setTable(new Table(tableColour, tableX, tableY, tableFriction));
+            Table table = new Table(tableColour, tableX, tableY, tableFriction);
+            gameManager.setTable(table);
 
             // parse pockets
             JSONArray jsonPockets = (JSONArray) jsonTable.get("pockets");
-            List<Pocket> pockets = parsePockets(jsonPockets);
-            gameManager.getTable().setPockets(pockets);
+            parsePockets(jsonPockets, table);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -69,10 +69,11 @@ public class TableReader implements Reader {
 
     /**
      * parse the "pockets" section in config.json
-     * @param jsonPockets the JSONArray of "pockets"
-     * @return a list of Pocket
+     *
+     * @param jsonPockets JSONArray of "pockets"
+     * @param table set pockets in the table
      */
-    public List<Pocket> parsePockets(JSONArray jsonPockets) {
+    private void parsePockets(JSONArray jsonPockets, Table table) {
         List<Pocket> pockets = new ArrayList<>();
         // reading from the array:
         for (Object obj : jsonPockets) {
@@ -84,15 +85,14 @@ public class TableReader implements Reader {
 
             Pocket pocket = new Pocket(x, y, radius);
 
-//                // Check pocket is within bounds
-//                Table table = gameManager.getTable();
-//                10 ????
-//                if (x > table.getxLength() || x < 10 || y > table.getyLength() || y < 10) {
-//                    System.out.println("Pocket position is outside the table");
-//                    System.exit(0);
-//                }
+            // Check pocket is within bounds
+            if (x > table.getxLength()-10 || x < 10 || y > table.getyLength()-10 || y < 10) {
+                System.out.println("Pocket position is outside the table");
+                System.exit(0);
+            }
+
             pockets.add(pocket);
         }
-        return pockets;
+        table.setPockets(pockets);
     }
 }

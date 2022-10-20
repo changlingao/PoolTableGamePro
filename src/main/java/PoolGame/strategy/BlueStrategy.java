@@ -9,4 +9,13 @@ public class BlueStrategy extends PocketStrategy {
     public void reset() {
         this.lives = 2;
     }
+
+    public BlueStrategy(int lives) {
+        this.lives = lives;
+    }
+
+    @Override
+    public BlueStrategy copy() {
+        return new BlueStrategy(lives);
+    }
 }
