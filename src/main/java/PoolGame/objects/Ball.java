@@ -228,25 +228,21 @@ public class Ball {
         return isActive;
     }
 
-    /**
-     * used for undo
-     *
-     * @return if ball is still
-     */
-    public boolean isStill() {
-        return xVelocity == 0 && yVelocity == 0;
-    }
 
     /**
-     * used for Memento
-     *
-     * @return deep copy
+     * used for deep copy, supplement to constructor
+     * @param active the ball is dead or not
      */
-    public Ball copy() {
-        Ball ball = new Ball("black", xPosition, yPosition, xVelocity, yVelocity, mass, isCue, null);
-        ball.setColour(colour);
-        ball.setStrategy(strategy.copy());
-        return ball;
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public void setStartX(double startX) {
+        this.startX = startX;
+    }
+
+    public void setStartY(double startY) {
+        this.startY = startY;
     }
 
     public void setColour(Paint colour) {
@@ -255,5 +251,27 @@ public class Ball {
 
     public void setStrategy(PocketStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    /**
+     * used for Memento
+     *
+     * @return deep copy
+     */
+    public Ball copy() {
+        // make use of the original constructor
+        Ball ball = new Ball("black", xPosition, yPosition, xVelocity, yVelocity, mass, isCue, null);
+        // set params needed
+        ball.setColour(colour);
+        ball.setStrategy(strategy.copy());
+        ball.setActive(isActive);
+        // same start positions
+        ball.setStartX(startX);
+        ball.setStartY(startY);
+        return ball;
+    }
+
+    public void setLives(int lives) {
+        strategy.setLives(lives);
     }
 }

@@ -76,6 +76,42 @@
           "y": 0.0
         },
         "mass": 1.0
+      },
+      {
+        "colour": "red",
+        "position": {
+          "x": 450.0,
+          "y": 150.0
+        },
+        "velocity": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "mass": 1.0
+      },
+      {
+        "colour": "blue",
+        "position": {
+          "x": 500.0,
+          "y": 85.0
+        },
+        "velocity": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "mass": 1.0
+      },
+      {
+        "colour": "blue",
+        "position": {
+          "x": 380.0,
+          "y": 220.0
+        },
+        "velocity": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "mass": 1.0
       }
     ]
   }

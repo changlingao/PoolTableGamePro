@@ -48,6 +48,9 @@ public class GameManager {
     private Duration duration = Duration.ZERO;
 
     private Memento memento;
+    private Button undoButton;
+    private Pane pane;
+    private Canvas canvas;
 
     /**
      * Initialises timeline and cycle count.
@@ -64,10 +67,10 @@ public class GameManager {
      * graphicscontext, and setting events related to clicks.
      */
     public void buildManager() {
-        Pane pane = new Pane();
+        pane = new Pane();
         setClickEvents(pane);
         this.scene = new Scene(pane, table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
-        Canvas canvas = new Canvas(table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
+        canvas = new Canvas(table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
         gc = canvas.getGraphicsContext2D();
         pane.getChildren().add(canvas);
 
@@ -80,8 +83,67 @@ public class GameManager {
         };
         timer.scheduleAtFixedRate(task, new Date(), 1000);
 
-        // undo button set up
-        Button undoButton = new Button("undo the shot");
+        // undo set up
+        undoSetup();
+
+        // cheat set up
+        cheatSetup();
+
+    }
+
+    /**
+     * cheat is triggered by key typed
+     */
+    private void cheatSetup() {
+        // scene and pane work, canvas does not work
+        pane.setOnKeyTyped(e -> {
+            switch (e.getCharacter()) {
+                case "1" -> cheat("red");
+                case "2" -> cheat("yellow");
+                case "3" -> cheat("green");
+                case "4" -> cheat("brown");
+                case "5" -> cheat("blue");
+                case "6" -> cheat("purple");
+                case "7" -> cheat("black");
+                case "8" -> cheat("orange");
+            }
+        });
+    }
+
+    /**
+     * remove all same colour balls and add scores
+     * @param colour cheat on which colour
+     */
+    private void cheat(String colour) {
+        // remove all same colour balls
+        for (Ball ball: balls) {
+            if (ball.getColour().equals(Paint.valueOf(colour))) {
+                ball.setActive(false);
+                ball.setLives(0);
+
+                // add scores
+                score += colourScore(ball.getColour());
+            }
+        }
+    }
+
+    /**
+     * remind user to type which key to cheat on which colour
+     */
+    private void drawCheatInstructions() {
+        gc.setFill(Paint.valueOf("black"));
+        gc.setFont(new Font(15));
+        String text = "(keycode:colour)  1:red  2:yellow  3:green  4:brown  5:blue  6:purple  7:black  8:orange";
+        gc.fillText(text, 50, 490);
+    }
+
+    /**
+     * undo button set up
+     * restrict after win cannot undo (refer to draw())
+     */
+    private void undoSetup() {
+        // create button
+        undoButton = new Button("undo the shot");
         undoButton.setLayoutX(350);
         undoButton.setLayoutY(10);
         pane.getChildren().add(undoButton);
@@ -89,17 +151,16 @@ public class GameManager {
         undoButton.setOnAction((ActionEvent actionEvent) -> {
             restore(memento);
         });
-
     }
 
     /**
      * draw the timer
      */
     private void drawTimer() {
-        gc.setStroke(Paint.valueOf("black"));
+        gc.setFill(Paint.valueOf("black"));
         gc.setFont(new Font(20));
         String text = "Timer:  " + duration.toMinutes() + ":" + duration.toSeconds()%60 ;
-        gc.strokeText(text, 50, 30);
+        gc.fillText(text, 50, 30);
     }
 
 
@@ -112,10 +173,10 @@ public class GameManager {
     }
 
     private void drawScore() {
-        gc.setStroke(Paint.valueOf("black"));
+        gc.setFill(Paint.valueOf("black"));
         gc.setFont(new Font(20));
         String text = "Score:  " + score;
-        gc.strokeText(text, 200, 30);
+        gc.fillText(text, 200, 30);
     }
 
     /**
@@ -167,6 +228,9 @@ public class GameManager {
         // Score
         drawScore();
 
+        // Cheat Instructions
+        drawCheatInstructions();
+
         // Win
         if (winFlag) {
             gc.setFill(Paint.valueOf("black"));
@@ -179,6 +243,9 @@ public class GameManager {
 
             // stop timer when all balls are in pockets
             timer.cancel();
+
+            // cannot undo after win
+            undoButton.setVisible(false);
         }
 
     }
@@ -210,10 +277,12 @@ public class GameManager {
      * @param memento kept by Caretaker
      */
     private void restore(Memento memento) {
+        if (memento == null) {
+            return;
+        }
         score = memento.getScore();
         duration = memento.getDuration();
         balls = memento.getBalls();
-        // deep copy ???
     }
 
     /**
@@ -221,19 +290,6 @@ public class GameManager {
      * Used Exercise 6 as reference.
      */
     public void tick() {
-        // if all balls are still, save the still state
-        boolean isStill = true;
-        for (Ball ball: balls) {
-            if (!ball.isStill()) {
-                isStill = false;
-                break;
-            }
-        }
-        if (isStill) {
-            memento = save();
-        }
-
-
         if (checkWin()) {
             winFlag = true;
         }
@@ -256,9 +312,9 @@ public class GameManager {
                         if (ball.isCue()) {
                             this.reset();
                         } else {
-                            if (ball.remove()) {
-                                setScore(score + colourScore(ball.getColour()));
-                            } else {
+                            boolean removed = ball.remove();
+                            setScore(score + colourScore(ball.getColour()));
+                            if (!removed) {
                                 // Check if when ball is removed, any other balls are present in its space.
                                 // If another ball is present, blue ball is removed
                                 for (Ball otherBall : balls) {
@@ -266,9 +322,8 @@ public class GameManager {
                                     double deltaY = ball.getyPos() - otherBall.getyPos();
                                     double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                                     if (otherBall != ball && otherBall.isActive() && distance < 10) {
-                                        if(ball.remove()) {
-                                            setScore(score + colourScore(ball.getColour()));
-                                        }
+                                        ball.remove();
+                                        // no score for this situation
                                     }
                                 }
                             }
@@ -302,14 +357,17 @@ public class GameManager {
 
                 // Check ball collisions
                 for (Ball ballB : balls) {
-                    if (checkCollision(ball, ballB)) {
-                        Point2D ballPos = new Point2D(ball.getxPos(), ball.getyPos());
-                        Point2D ballBPos = new Point2D(ballB.getxPos(), ballB.getyPos());
-                        Point2D ballVel = new Point2D(ball.getxVel(), ball.getyVel());
-                        Point2D ballBVel = new Point2D(ballB.getxVel(), ballB.getyVel());
-                        Pair<Point2D, Point2D> changes = calculateCollision(ballPos, ballVel, ball.getMass(), ballBPos,
-                                ballBVel, ballB.getMass(), false);
-                        calculateChanges(changes, ball, ballB);
+                    // bug fixed: only collide with alive ball
+                    if (ball.isActive()) {
+                        if (checkCollision(ball, ballB)) {
+                            Point2D ballPos = new Point2D(ball.getxPos(), ball.getyPos());
+                            Point2D ballBPos = new Point2D(ballB.getxPos(), ballB.getyPos());
+                            Point2D ballVel = new Point2D(ball.getxVel(), ball.getyVel());
+                            Point2D ballBVel = new Point2D(ballB.getxVel(), ballB.getyVel());
+                            Pair<Point2D, Point2D> changes = calculateCollision(ballPos, ballVel, ball.getMass(), ballBPos,
+                                    ballBVel, ballB.getMass(), false);
+                            calculateChanges(changes, ball, ballB);
+                        }
                     }
                 }
             }
@@ -393,6 +451,9 @@ public class GameManager {
      * @param ball
      */
     private void hitBall(Ball ball) {
+        // to undo a shot
+        memento = save();
+
         double deltaX = ball.getxPos() - cue.getStartX();
         double deltaY = ball.getyPos() - cue.getStartY();
         double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);

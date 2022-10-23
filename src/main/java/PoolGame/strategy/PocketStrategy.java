@@ -25,4 +25,8 @@ public abstract class PocketStrategy {
     public abstract void reset();
 
     public abstract PocketStrategy copy();
+
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
 }
