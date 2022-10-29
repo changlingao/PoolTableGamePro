@@ -13,6 +13,13 @@ public class Table {
     private Double friction;
     private List<Pocket> pockets = new ArrayList<Pocket>();
 
+    /**
+     * construct a table
+     * @param colour of table
+     * @param xLength x length
+     * @param yLength y length
+     * @param friction of table
+     */
     public Table(String colour, Long xLength, Long yLength, Double friction) {
         this.colour = Paint.valueOf(colour);
         this.xLength = xLength;
@@ -68,7 +75,7 @@ public class Table {
     /**
      * instead of initialisePockets() internally,
      * PocketReader will read
-     * @param pockets
+     * @param pockets pockets
      */
     public void setPockets(List<Pocket> pockets) {
         this.pockets = pockets;

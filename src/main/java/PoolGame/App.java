@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 
 /** Main application entry point. */
 public class App extends Application {
+    private static Stage stage;
+
     /**
      * @param args First argument is the path to the config file
      */
@@ -32,20 +34,29 @@ public class App extends Application {
      * @param primaryStage The primary stage for the application.
      */
     public void start(Stage primaryStage) {
+        stage = primaryStage;
         // choose level scene
-        Scene scene = levelChoose(primaryStage);
-        primaryStage.setTitle("Pool Table Game");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        initialScene();
+    }
+
+    /**
+     * welcome and choose difficulty level
+     */
+    public static void initialScene() {
+        Scene scene = levelChoose();
+        stage.setTitle("Pool Table Game");
+        stage.setScene(scene);
+        stage.show();
     }
 
     /**
      * The scene to choose level,
      * also handle scene transition when button is clicked.
-     * @param primaryStage the stage of this app
+
      * @return the scene to choose level
      */
-    public Scene levelChoose(Stage primaryStage) {
+    private static Scene levelChoose() {
+        //      * @param primaryStage the stage of this app
         VBox vBox = new VBox();
         Scene scene = new Scene(vBox, 600, 400);
 
@@ -64,15 +75,15 @@ public class App extends Application {
         // on click change scene to actual game
         easy.setOnAction(e -> {
             String configPath = "src/main/resources/config_easy.json";
-            primaryStage.setScene(gameScene(configPath));
+            stage.setScene(gameScene(configPath));
         });
         normal.setOnAction(e -> {
             String configPath = "src/main/resources/config_normal.json";
-            primaryStage.setScene(gameScene(configPath));
+            stage.setScene(gameScene(configPath));
         });
         hard.setOnAction(e -> {
             String configPath = "src/main/resources/config_hard.json";
-            primaryStage.setScene(gameScene(configPath));
+            stage.setScene(gameScene(configPath));
         });
 
         // only return once for level choose scene
@@ -84,9 +95,9 @@ public class App extends Application {
      * @param configPath path for config json
      * @return game scene
      */
-    public Scene gameScene(String configPath) {
-        // READ IN CONFIG
-        GameManager gameManager = new GameManager();
+    private static Scene gameScene(String configPath) {
+        // Singleton
+        GameManager gameManager = GameManager.getGameManager();
 
         ReaderFactory tableFactory = new TableReaderFactory();
         Reader tableReader = tableFactory.buildReader();
@@ -101,7 +112,6 @@ public class App extends Application {
         return gameManager.getScene();
     }
 
-    // TODO: args ???
     /**
      * Checks if the config file path is given as an argument.
      * 

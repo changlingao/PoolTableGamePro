@@ -7,8 +7,8 @@ public interface Reader {
     /**
      * Parses the config file.
      * 
-     * @param args
-     * @param gameManager
+     * @param args The path to the JSON file.
+     * @param gameManager The game manager.
      */
     public void parse(String args, GameManager gameManager);
 }

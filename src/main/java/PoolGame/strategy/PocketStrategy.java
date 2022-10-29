@@ -24,8 +24,16 @@ public abstract class PocketStrategy {
      */
     public abstract void reset();
 
+    /**
+     * deep copy
+     * @return a deep copy of PocketStrategy
+     */
     public abstract PocketStrategy copy();
 
+    /**
+     * set lives
+     * @param lives lives
+     */
     public void setLives(int lives) {
         this.lives = lives;
     }

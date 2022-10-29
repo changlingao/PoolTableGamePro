@@ -5,20 +5,26 @@ package PoolGame.strategy;
  * third time: disappear
  */
 public class BrownStrategy extends PocketStrategy {
+    /**
+     * constructor with 3 lives
+     */
     public BrownStrategy() {
         this.lives = 3;
     }
 
+    /** reset */
     public void reset() {
         this.lives = 3;
     }
 
-    public BrownStrategy(int lives) {
-        this.lives = lives;
-    }
-
+    /**
+     * deep copy
+     * @return a deep copy of BrownStrategy
+     */
     @Override
     public BrownStrategy copy() {
-        return new BrownStrategy(lives);
+        BrownStrategy ballStrategy = new BrownStrategy();
+        ballStrategy.setLives(lives);
+        return ballStrategy;
     }
 }

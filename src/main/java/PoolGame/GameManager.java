@@ -52,43 +52,43 @@ public class GameManager {
     private Pane pane;
     private Canvas canvas;
 
+    private static GameManager gameManager;
+
     /**
-     * Initialises timeline and cycle count.
+     * private constructor for Singleton
      */
-    public void run() {
-        Timeline timeline = new Timeline(new KeyFrame(javafx.util.Duration.millis(17),
-                t -> this.draw()));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+    private GameManager() {}
+
+    /**
+     * Singleton
+     * @return a game manager
+     */
+    public static GameManager getGameManager() {
+        if (gameManager == null) {
+            gameManager = new GameManager();
+        }
+        return gameManager;
     }
 
     /**
-     * Builds GameManager properties such as initialising pane, canvas,
-     * graphicscontext, and setting events related to clicks.
+     * save the still state
+     * @return Memento
      */
-    public void buildManager() {
-        pane = new Pane();
-        setClickEvents(pane);
-        this.scene = new Scene(pane, table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
-        canvas = new Canvas(table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
-        gc = canvas.getGraphicsContext2D();
-        pane.getChildren().add(canvas);
+    private Memento save() {
+        return new Memento(score, duration, balls);
+    }
 
-        // timer set up
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                duration = duration.plusSeconds(1);
-            }
-        };
-        timer.scheduleAtFixedRate(task, new Date(), 1000);
-
-        // undo set up
-        undoSetup();
-
-        // cheat set up
-        cheatSetup();
-
+    /**
+     * restore state from memento
+     * @param memento kept by Caretaker
+     */
+    private void restore(Memento memento) {
+        if (memento == null) {
+            return;
+        }
+        score = memento.getScore();
+        duration = memento.getDuration();
+        balls = memento.getBalls();
     }
 
     /**
@@ -122,7 +122,7 @@ public class GameManager {
                 ball.setLives(0);
 
                 // add scores
-                score += colourScore(ball.getColour());
+                score += ColourRelated.scoreColour(ball.getColour());
             }
         }
     }
@@ -168,7 +168,7 @@ public class GameManager {
      * observe the score, when changed notify the observer
      * @param score score of the game
      */
-    public void setScore(int score) {
+    private void setScore(int score) {
         this.score = score;
     }
 
@@ -177,6 +177,77 @@ public class GameManager {
         gc.setFont(new Font(20));
         String text = "Score:  " + score;
         gc.fillText(text, 200, 30);
+    }
+
+    /**
+     * check if won the game
+     * @return winFlag
+     */
+    private boolean checkWin() {
+        int count = 0;
+        for (Ball ball : balls) {
+            if (!ball.isActive()) {
+                count ++;
+            }
+        }
+        return count == (balls.size() - 1);
+    }
+
+    /**
+     * click back button to the initial page to choose level
+     */
+    private void backToInitialSetup() {
+        // create button
+        Button back = new Button("back to initial page");
+        back.setLayoutX(500);
+        back.setLayoutY(10);
+        pane.getChildren().add(back);
+
+        back.setOnAction((ActionEvent actionEvent) -> {
+            gameManager = null;
+            App.initialScene();
+        });
+    }
+
+    /**
+     * Initialises timeline and cycle count.
+     */
+    public void run() {
+        Timeline timeline = new Timeline(new KeyFrame(javafx.util.Duration.millis(17),
+                t -> this.draw()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    /**
+     * Builds GameManager properties such as initialising pane, canvas,
+     * graphicscontext, and setting events related to clicks.
+     */
+    public void buildManager() {
+        pane = new Pane();
+        setClickEvents(pane);
+        this.scene = new Scene(pane, table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
+        canvas = new Canvas(table.getxLength() + TABLEBUFFER * 2, table.getyLength() + TABLEBUFFER * 2);
+        gc = canvas.getGraphicsContext2D();
+        pane.getChildren().add(canvas);
+
+        // timer set up
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                duration = duration.plusSeconds(1);
+            }
+        };
+        timer.scheduleAtFixedRate(task, 1000, 1000);
+
+        // undo set up
+        undoSetup();
+
+        // cheat set up
+        cheatSetup();
+
+        // back to initial set up
+        backToInitialSetup();
     }
 
     /**
@@ -251,45 +322,10 @@ public class GameManager {
     }
 
     /**
-     * check if won the game
-     * @return winFlag
-     */
-    private boolean checkWin() {
-        int count = 0;
-        for (Ball ball : balls) {
-            if (!ball.isActive()) {
-                count ++;
-            }
-        }
-        return count == (balls.size() - 1);
-    }
-
-    /**
-     * save the still state
-     * @return Memento
-     */
-    private Memento save() {
-        return new Memento(score, duration, balls);
-    }
-
-    /**
-     * restore state from memento
-     * @param memento kept by Caretaker
-     */
-    private void restore(Memento memento) {
-        if (memento == null) {
-            return;
-        }
-        score = memento.getScore();
-        duration = memento.getDuration();
-        balls = memento.getBalls();
-    }
-
-    /**
      * Updates positions of all balls, handles logic related to collisions.
      * Used Exercise 6 as reference.
      */
-    public void tick() {
+    private void tick() {
         if (checkWin()) {
             winFlag = true;
         }
@@ -313,7 +349,7 @@ public class GameManager {
                             this.reset();
                         } else {
                             boolean removed = ball.remove();
-                            setScore(score + colourScore(ball.getColour()));
+                            setScore(score + ColourRelated.scoreColour(ball.getColour()));
                             if (!removed) {
                                 // Check if when ball is removed, any other balls are present in its space.
                                 // If another ball is present, blue ball is removed
@@ -372,33 +408,6 @@ public class GameManager {
                 }
             }
         }
-    }
-
-    /**
-     * score when falling into pockets corresponding to colour
-     *
-     * @param colour of the ball
-     * @return score corresponding to colour
-     */
-    public int colourScore(Paint colour) {
-        if (colour.equals(Paint.valueOf("red"))) {
-            return 1;
-        } else if (colour.equals(Paint.valueOf("yellow"))) {
-            return 2;
-        } else if (colour.equals(Paint.valueOf("green"))) {
-            return 3;
-        } else if (colour.equals(Paint.valueOf("brown"))) {
-            return 4;
-        } else if (colour.equals(Paint.valueOf("blue"))) {
-            return 5;
-        } else if (colour.equals(Paint.valueOf("purple"))) {
-            return 6;
-        } else if (colour.equals(Paint.valueOf("black"))) {
-            return 7;
-        } else if (colour.equals(Paint.valueOf("orange"))) {
-            return 8;
-        }
-        return 0;
     }
 
     /**

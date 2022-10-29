@@ -22,6 +22,7 @@ public class Ball {
 
     private final double MAXVEL = 20;
 
+    /** Constructor */
     public Ball(String colour, double xPosition, double yPosition, double xVelocity, double yVelocity, double mass,
             boolean isCue, PocketStrategy strategy) {
         this.colour = Paint.valueOf(colour);
@@ -237,18 +238,22 @@ public class Ball {
         isActive = active;
     }
 
+    /** setter */
     public void setStartX(double startX) {
         this.startX = startX;
     }
 
+    /** setter */
     public void setStartY(double startY) {
         this.startY = startY;
     }
 
+    /** setter */
     public void setColour(Paint colour) {
         this.colour = colour;
     }
 
+    /** setter */
     public void setStrategy(PocketStrategy strategy) {
         this.strategy = strategy;
     }

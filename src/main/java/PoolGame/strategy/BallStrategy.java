@@ -8,17 +8,19 @@ public class BallStrategy extends PocketStrategy {
         this.lives = 1;
     }
 
+    /** reset */
     public void reset() {
         this.lives = 1;
     }
 
-
-    public BallStrategy(int lives) {
-        this.lives = lives;
-    }
-
+    /**
+     * deep copy
+     * @return a deep copy of BallStrategy
+     */
     @Override
     public BallStrategy copy() {
-        return new BallStrategy(lives);
+        BallStrategy ballStrategy = new BallStrategy();
+        ballStrategy.setLives(lives);
+        return ballStrategy;
     }
 }
