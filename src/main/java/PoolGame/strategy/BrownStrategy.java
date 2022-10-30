@@ -18,13 +18,19 @@ public class BrownStrategy extends PocketStrategy {
     }
 
     /**
-     * deep copy
-     * @return a deep copy of BrownStrategy
+     * used with copy() for Prototype
+     * @param brownStrategy to be cloned
+     */
+    private BrownStrategy(BrownStrategy brownStrategy) {
+        this.lives = brownStrategy.getLives();
+    }
+
+    /**
+     * Prototype design pattern
+     * @return a deep copy of BallStrategy
      */
     @Override
     public BrownStrategy copy() {
-        BrownStrategy ballStrategy = new BrownStrategy();
-        ballStrategy.setLives(lives);
-        return ballStrategy;
+        return new BrownStrategy(this);
     }
 }

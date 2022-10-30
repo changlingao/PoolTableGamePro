@@ -1,6 +1,6 @@
 package PoolGame.objects;
 
-import PoolGame.Config;
+import PoolGame.config.Config;
 
 /** Holds information for all pocket-related objects. */
 public class Pocket {

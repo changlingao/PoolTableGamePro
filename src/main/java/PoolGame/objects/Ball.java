@@ -1,6 +1,6 @@
 package PoolGame.objects;
 
-import PoolGame.Config;
+import PoolGame.config.Config;
 import PoolGame.strategy.PocketStrategy;
 import javafx.scene.paint.Paint;
 
@@ -20,7 +20,7 @@ public class Ball {
     private boolean isActive;
     private PocketStrategy strategy;
 
-    private final double MAXVEL = 20;
+    private static final double MAXVEL = 20;
 
     /** Constructor */
     public Ball(String colour, double xPosition, double yPosition, double xVelocity, double yVelocity, double mass,
@@ -258,24 +258,48 @@ public class Ball {
         this.strategy = strategy;
     }
 
+    /** getter */
+    public PocketStrategy getStrategy() {
+        return strategy;
+    }
+
+    /** getter without table buffer */
+    public double getxPosition() {
+        return xPosition;
+    }
+
+    /** getter without table buffer */
+    public double getyPosition() {
+        return yPosition;
+    }
+
+    private Ball(Ball ball) {
+        this.colour = ball.getColour();
+        this.xPosition = ball.getxPosition();
+        this.yPosition = ball.getyPosition();
+        this.xVelocity = ball.getxVel();
+        this.yVelocity = ball.getyVel();
+        this.mass = ball.getMass();
+        this.radius = ball.getRadius();
+        this.isCue = ball.isCue();
+        this.startX = ball.getStartXPos();
+        this.startY = ball.getStartYPos();
+        this.isActive = ball.isActive();
+
+        // the copy
+        this.strategy = ball.getStrategy().copy();
+    }
+
     /**
      * used for Memento
      *
      * @return deep copy
      */
     public Ball copy() {
-        // make use of the original constructor
-        Ball ball = new Ball("black", xPosition, yPosition, xVelocity, yVelocity, mass, isCue, null);
-        // set params needed
-        ball.setColour(colour);
-        ball.setStrategy(strategy.copy());
-        ball.setActive(isActive);
-        // same start positions
-        ball.setStartX(startX);
-        ball.setStartY(startY);
-        return ball;
+        return new Ball(this);
     }
 
+    /** setter for cheat */
     public void setLives(int lives) {
         strategy.setLives(lives);
     }

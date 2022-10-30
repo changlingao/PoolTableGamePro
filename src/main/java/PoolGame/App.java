@@ -1,20 +1,20 @@
 package PoolGame;
 
-import PoolGame.config.*;
-
-import java.util.List;
-
+import PoolGame.config.BallReaderFactory;
+import PoolGame.config.Reader;
+import PoolGame.config.ReaderFactory;
+import PoolGame.config.TableReaderFactory;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+
+import java.util.List;
 
 /** Main application entry point. */
 public class App extends Application {
@@ -96,8 +96,7 @@ public class App extends Application {
      * @return game scene
      */
     private static Scene gameScene(String configPath) {
-        // Singleton
-        GameManager gameManager = GameManager.getGameManager();
+        GameManager gameManager = new GameManager();
 
         ReaderFactory tableFactory = new TableReaderFactory();
         Reader tableReader = tableFactory.buildReader();

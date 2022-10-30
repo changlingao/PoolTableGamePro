@@ -1,4 +1,4 @@
-package PoolGame;
+package PoolGame.config;
 
 /** Holds static final data. */
 public class Config {

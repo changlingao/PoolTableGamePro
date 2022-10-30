@@ -1,8 +1,9 @@
 package PoolGame.objects;
 
 import javafx.scene.paint.Paint;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
 
 /** Holds properties of the table object. */
 public class Table {

@@ -14,13 +14,19 @@ public class BallStrategy extends PocketStrategy {
     }
 
     /**
-     * deep copy
+     * used with copy() for Prototype
+     * @param ballStrategy to be cloned
+     */
+    private BallStrategy(BallStrategy ballStrategy) {
+        this.lives = ballStrategy.getLives();
+    }
+
+    /**
+     * Prototype design pattern
      * @return a deep copy of BallStrategy
      */
     @Override
     public BallStrategy copy() {
-        BallStrategy ballStrategy = new BallStrategy();
-        ballStrategy.setLives(lives);
-        return ballStrategy;
+        return new BallStrategy(this);
     }
 }

@@ -15,13 +15,19 @@ public class BlueStrategy extends PocketStrategy {
     }
 
     /**
-     * deep copy
-     * @return a deep copy of BlueStrategy
+     * used with copy() for Prototype
+     * @param blueStrategy to be cloned
+     */
+    private BlueStrategy(BlueStrategy blueStrategy) {
+        this.lives = blueStrategy.getLives();
+    }
+
+    /**
+     * Prototype design pattern
+     * @return a deep copy of BallStrategy
      */
     @Override
     public BlueStrategy copy() {
-        BlueStrategy ballStrategy = new BlueStrategy();
-        ballStrategy.setLives(lives);
-        return ballStrategy;
+        return new BlueStrategy(this);
     }
 }

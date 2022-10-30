@@ -1,29 +1,28 @@
 package PoolGame;
 
-import PoolGame.objects.*;
+import PoolGame.config.Config;
+import PoolGame.objects.Ball;
+import PoolGame.objects.Pocket;
+import PoolGame.objects.Table;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.geometry.Point2D;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.text.Font;
+import javafx.util.Pair;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javafx.event.ActionEvent;
-import javafx.geometry.Point2D;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-
-import javafx.scene.control.Button;
-import javafx.scene.shape.Line;
-import javafx.scene.Scene;
-import javafx.scene.text.Font;
-import javafx.scene.paint.Paint;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.Pane;
-
-import javafx.util.Pair;
 
 /**
  * Controls the game interface; drawing objects, handling logic and collisions.
@@ -51,24 +50,7 @@ public class GameManager {
     private Button undoButton;
     private Pane pane;
     private Canvas canvas;
-
-    private static GameManager gameManager;
-
-    /**
-     * private constructor for Singleton
-     */
-    private GameManager() {}
-
-    /**
-     * Singleton
-     * @return a game manager
-     */
-    public static GameManager getGameManager() {
-        if (gameManager == null) {
-            gameManager = new GameManager();
-        }
-        return gameManager;
-    }
+    private Button back;
 
     /**
      * save the still state
@@ -80,15 +62,15 @@ public class GameManager {
 
     /**
      * restore state from memento
-     * @param memento kept by Caretaker
      */
-    private void restore(Memento memento) {
+    private void restore() {
         if (memento == null) {
             return;
         }
         score = memento.getScore();
         duration = memento.getDuration();
         balls = memento.getBalls();
+        memento = null;
     }
 
     /**
@@ -133,7 +115,7 @@ public class GameManager {
     private void drawCheatInstructions() {
         gc.setFill(Paint.valueOf("black"));
         gc.setFont(new Font(15));
-        String text = "(keycode:colour)  1:red  2:yellow  3:green  4:brown  5:blue  6:purple  7:black  8:orange";
+        String text = "cheat (keycode:colour)  1:red  2:yellow  3:green  4:brown  5:blue  6:purple  7:black  8:orange";
         gc.fillText(text, 50, 490);
     }
 
@@ -149,7 +131,7 @@ public class GameManager {
         pane.getChildren().add(undoButton);
 
         undoButton.setOnAction((ActionEvent actionEvent) -> {
-            restore(memento);
+            restore();
         });
     }
 
@@ -159,13 +141,16 @@ public class GameManager {
     private void drawTimer() {
         gc.setFill(Paint.valueOf("black"));
         gc.setFont(new Font(20));
-        String text = "Timer:  " + duration.toMinutes() + ":" + duration.toSeconds()%60 ;
+        String text = "Timer:  " + duration.toMinutes() + ":";
+        if (duration.toSeconds()%60 < 10) {
+            text += "0";
+        }
+        text += duration.toSeconds()%60 ;
         gc.fillText(text, 50, 30);
     }
 
 
     /**
-     * observe the score, when changed notify the observer
      * @param score score of the game
      */
     private void setScore(int score) {
@@ -198,13 +183,12 @@ public class GameManager {
      */
     private void backToInitialSetup() {
         // create button
-        Button back = new Button("back to initial page");
+        back = new Button("back to initial page");
         back.setLayoutX(500);
         back.setLayoutY(10);
         pane.getChildren().add(back);
 
         back.setOnAction((ActionEvent actionEvent) -> {
-            gameManager = null;
             App.initialScene();
         });
     }
@@ -317,6 +301,7 @@ public class GameManager {
 
             // cannot undo after win
             undoButton.setVisible(false);
+            back.setVisible(false);
         }
 
     }
@@ -419,6 +404,7 @@ public class GameManager {
         }
 
         setScore(0);
+        duration = Duration.ZERO;
     }
 
     /**

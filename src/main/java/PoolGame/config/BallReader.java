@@ -1,17 +1,18 @@
 package PoolGame.config;
 
-import PoolGame.objects.*;
 import PoolGame.GameManager;
-import java.util.ArrayList;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
+import PoolGame.objects.Ball;
+import PoolGame.objects.PoolBallBuilder;
+import PoolGame.objects.Table;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /** Reads in ball section of JSON. */
 public class BallReader implements Reader {
